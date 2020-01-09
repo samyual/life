@@ -10,6 +10,7 @@ import android.view.MotionEvent
 import android.view.MotionEvent.ACTION_MASK
 import android.view.MotionEvent.ACTION_UP
 import android.view.SurfaceView
+import kotlin.random.Random
 
 class GameOfLife(context: Context, private val screenSize: Point) : SurfaceView(context), Runnable {
 
@@ -23,10 +24,14 @@ class GameOfLife(context: Context, private val screenSize: Point) : SurfaceView(
 
         // Количество миллисекунд в секунде
         private const val millisPerSecond: Long = 1_000
+
     }
 
     // Размеры клеток на экране
-    private val cellSize = Point().apply { x = screenSize.x / cellsPerLine; y = x }
+    private val cellSize = Point().apply {
+        x = screenSize.x / cellsPerLine
+        y = x
+    }
 
     // Размер шрифта (5% от высоты экрана)
     private val fontSize: Float = screenSize.y / 20f
@@ -34,29 +39,30 @@ class GameOfLife(context: Context, private val screenSize: Point) : SurfaceView(
     // Колония клеток
     private val colony = Colony(
         cellSize,
-        listOf(
-            Point(10, 10),
-            Point(10, 11),
-            Point(10, 12)
-        )
+        randomColony()
     )
 
-    // Признак останова игры
+    // Признак паузы игры
     private var isPaused = true
 
+    // Игра в процессе
+    private var isPlaying = false
+
     // Тред
-    private var thread: Thread? = null
+    private lateinit var thread: Thread
 
     // Время для отображение следующего кадра
     private var timeOfNextFrame: Long = 0
 
     // Обработка нажатий
     override fun onTouchEvent(event: MotionEvent?): Boolean {
-        if (event != null) {
 
-            // Пользователь убрал палец с экрана
-            if (event.action and ACTION_MASK == ACTION_UP) {
-                isPaused = !isPaused
+        event?.let {
+
+            when (event.action and ACTION_MASK) {
+
+                // Пользователь убрал палец от экрана
+                ACTION_UP -> isPaused = !isPaused
             }
         }
 
@@ -65,31 +71,33 @@ class GameOfLife(context: Context, private val screenSize: Point) : SurfaceView(
 
     // Цикл игры
     override fun run() {
-        if (!isPaused) {
-            if (updateRequired()) {
-                update()
-                draw()
+        while (isPlaying) {
+            if (!isPaused) {
+                if (updateRequired()) {
+                    update()
+                }
             }
+            draw()
         }
     }
 
     /**
-     * Запуск игры
+     * Снять игру с паузы
      */
     fun resume() {
-        isPaused = false
+        isPlaying = true
         timeOfNextFrame = System.currentTimeMillis()
         thread = Thread(this)
-        thread!!.start()
+        thread.start()
     }
 
     /**
      * Поставить игру на паузу
      */
     fun pause() {
-        isPaused = true
+        isPlaying = false
         try {
-            thread?.join()
+            thread.join()
         } catch (e: InterruptedException) {
             Log.e("ERROR", "Thread not joined")
         }
@@ -115,15 +123,18 @@ class GameOfLife(context: Context, private val screenSize: Point) : SurfaceView(
 
     // Рисовать колонию и информационную панель
     private fun draw() {
+
         if (holder.surface.isValid) {
 
             // Блокировать перерисовку
             val canvas = holder.lockCanvas()
 
+            // Игра на паузе
             if (isPaused) {
 
                 // Отрисовать заставку
                 drawSplash(canvas)
+
             } else {
 
                 // Отрисовать колонию
@@ -157,5 +168,13 @@ class GameOfLife(context: Context, private val screenSize: Point) : SurfaceView(
             color = Color.BLACK
         }
         canvas.drawText("Conway's Life", 20f, screenSize.y / 10f * 5.5f, paint)
+    }
+
+    private fun randomColony(): List<Point> {
+        val list = mutableListOf<Point>()
+        (1..cellsPerLine * cellsPerLine).forEach {
+            list += Point(Random.nextInt(cellsPerLine), Random.nextInt(cellsPerLine))
+        }
+        return list
     }
 }

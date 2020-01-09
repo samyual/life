@@ -13,6 +13,7 @@ import android.graphics.Rect
  */
 class Colony(private val cellSize: Point, initial: List<Point> = listOf()) {
 
+    // Хранилище живых клеток
     private val cells = mutableMapOf<Point, Cell>()
 
     // Возвращает диапазон адресов по горизонтали, к которым необходимо
@@ -34,13 +35,18 @@ class Colony(private val cellSize: Point, initial: List<Point> = listOf()) {
         }
     }
 
-    // Позволяет обращаться к отдельным клеткам колонии как this[x,y]
+    /**
+     *  Позволяет обращаться к отдельным клеткам колонии как this[x,y]
+     *  Пустые клетки возвращаются как <b>null</b>
+     */
     operator fun get(x: Int, y: Int): Cell? {
         return cells[Point(x, y)]
     }
 
-    // Позволяет выполнить присваивание клеток в виде this[x,y] = Cell(generation),
-    // a также удалять клетки из колонии с помощью выражения this[x, y] = null
+    /**
+     *  Позволяет выполнить присваивание клеток в виде this[x,y] = Cell(generation),
+     *  a также удалять клетки из колонии с помощью выражения this[x, y] = null
+     */
     operator fun set(x: Int, y: Int, cell: Cell?) {
         if (cell != null) {
             cells[Point(x, y)] = cell
@@ -135,19 +141,21 @@ class Colony(private val cellSize: Point, initial: List<Point> = listOf()) {
 
     /**
      * Возвратить количество соседних живых клеток
-     * @param x адрес клетки в колонии по горизонтали
-     * @param y адрес клетки в колонии по вертикали
+     * @param xPos адрес клетки в колонии по горизонтали
+     * @param yPos адрес клетки в колонии по вертикали
      * @return количество соседей
      */
-    private fun numberOfNeighbors(x: Int, y: Int): Int {
+    private fun numberOfNeighbors(xPos: Int, yPos: Int): Int {
         var number = 0
         // Подсчитать живые клетки в квадрате 3х3
-        for (i in x - 1..x + 1) {
-            for (j in y - 1..y + 1) {
-                this[x, y]?.let { number++ }
+        for (x in xPos - 1..xPos + 1) {
+            for (y in yPos - 1..yPos + 1) {
+                if (this[x, y] != null) {
+                    number += 1
+                }
             }
         }
         // Если клетка живая, вернуть на одну меньше
-        return if (this[x, y] == null) number else number - 1
+        return if (this[xPos, yPos] != null) number - 1 else number
     }
 }

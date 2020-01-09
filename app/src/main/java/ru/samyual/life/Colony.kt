@@ -13,6 +13,13 @@ import android.graphics.Rect
  */
 class Colony(private val cellSize: Point, initial: List<Point> = listOf()) {
 
+    // Поколение колонии
+    var generation: Long = 1
+        private set
+
+    val size: Int
+        get() = cells.size
+
     // Хранилище живых клеток
     private val cells = mutableMapOf<Point, Cell>()
 
@@ -24,10 +31,6 @@ class Colony(private val cellSize: Point, initial: List<Point> = listOf()) {
     // То же самое по вертикали
     private val verticalRange: IntRange
         get() = getVerticalMinMax()
-
-    // Поколение колонии
-    var generation: Long = 1
-        private set
 
     init {
         initial.forEach {
@@ -60,7 +63,7 @@ class Colony(private val cellSize: Point, initial: List<Point> = listOf()) {
      * по классическим правилам Конвея
      */
     fun nextGeneration() {
-        generation++
+        generation += 1
 
         // Колония следующего поколения
         val nextColony = mutableMapOf<Point, Cell>()

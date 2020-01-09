@@ -20,7 +20,7 @@ class GameOfLife(context: Context, private val screenSize: Point) : SurfaceView(
         private const val cellsPerLine = 50
 
         // Количество кадров в секунду (один кадр = одно поколение)
-        private const val targetFPS: Long = 2
+        private const val targetFPS: Long = 4
 
         // Количество миллисекунд в секунде
         private const val millisPerSecond: Long = 1_000
@@ -57,6 +57,10 @@ class GameOfLife(context: Context, private val screenSize: Point) : SurfaceView(
     // Обработка нажатий
     override fun onTouchEvent(event: MotionEvent?): Boolean {
 
+        // TODO: Перемещение окна по колонии
+
+        // TODO: Масштабирование по щипкам
+
         event?.let {
 
             when (event.action and ACTION_MASK) {
@@ -72,11 +76,13 @@ class GameOfLife(context: Context, private val screenSize: Point) : SurfaceView(
     // Цикл игры
     override fun run() {
         while (isPlaying) {
+
             if (!isPaused) {
                 if (updateRequired()) {
                     update()
                 }
             }
+
             draw()
         }
     }
@@ -129,20 +135,17 @@ class GameOfLife(context: Context, private val screenSize: Point) : SurfaceView(
             // Блокировать перерисовку
             val canvas = holder.lockCanvas()
 
+            // Отрисовать колонию
+            colony.draw(canvas)
+
+            // Отрисовать информационную панель
+            drawInfo(canvas)
+
             // Игра на паузе
             if (isPaused) {
 
                 // Отрисовать заставку
                 drawSplash(canvas)
-
-            } else {
-
-                // Отрисовать колонию
-                colony.draw(canvas)
-
-                // Отрисовать информационную панель
-                drawInfo(canvas)
-
             }
 
             // Разблокировать и нарисовать
@@ -157,6 +160,7 @@ class GameOfLife(context: Context, private val screenSize: Point) : SurfaceView(
             textSize = fontSize
         }
         canvas.drawText("Generation ${colony.generation}", 10f, fontSize, paint)
+        canvas.drawText("Live cells ${colony.size}", 10f, fontSize * 2, paint)
     }
 
     // Нарисовать заставку
@@ -165,9 +169,11 @@ class GameOfLife(context: Context, private val screenSize: Point) : SurfaceView(
 
         val paint = Paint().apply {
             textSize = screenSize.x / 10f
-            color = Color.BLACK
+            color = Color.BLUE
         }
-        canvas.drawText("Conway's Life", 20f, screenSize.y / 10f * 5.5f, paint)
+        canvas.drawText("CONWAY'S LIFE", 20f, screenSize.y / 10f * 5.5f, paint)
+        paint.textSize = screenSize.x / 20f
+        canvas.drawText("Tap to play", 20f, screenSize.y / 10f * 7f, paint)
     }
 
     private fun randomColony(): List<Point> {

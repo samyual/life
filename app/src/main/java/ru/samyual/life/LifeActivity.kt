@@ -3,6 +3,7 @@ package ru.samyual.life
 import android.app.Activity
 import android.graphics.Point
 import android.os.Bundle
+import android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
 
 class LifeActivity : Activity() {
 
@@ -10,6 +11,9 @@ class LifeActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Экран не должен отключаться
+        window.addFlags(FLAG_KEEP_SCREEN_ON)
 
         // Определяем размер экрана
         val display = windowManager.defaultDisplay

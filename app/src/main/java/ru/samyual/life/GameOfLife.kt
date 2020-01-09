@@ -165,20 +165,18 @@ class GameOfLife(context: Context, private val screenSize: Point) : SurfaceView(
 
     // Нарисовать заставку
     private fun drawSplash(canvas: Canvas) {
-        canvas.drawColor(Color.WHITE)
 
         val paint = Paint().apply {
-            textSize = screenSize.x / 10f
+            textSize = screenSize.x / 20f
             color = Color.BLUE
         }
-        canvas.drawText("CONWAY'S LIFE", 20f, screenSize.y / 10f * 5.5f, paint)
-        paint.textSize = screenSize.x / 20f
-        canvas.drawText("Tap to play", 20f, screenSize.y / 10f * 7f, paint)
+        canvas.drawText("Pause. Tap to play", 20f, screenSize.y / 20f * 10.5f, paint)
     }
 
+    // Генерация случайной колонии
     private fun randomColony(): List<Point> {
         val list = mutableListOf<Point>()
-        (1..cellsPerLine * cellsPerLine).forEach {
+        (1..cellsPerLine * 10).forEach { _ ->
             list += Point(Random.nextInt(cellsPerLine), Random.nextInt(cellsPerLine))
         }
         return list

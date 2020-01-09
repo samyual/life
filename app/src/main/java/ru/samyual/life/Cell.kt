@@ -4,13 +4,14 @@ import android.graphics.*
 
 /**
  * Живая клетка
+ * @param bornGeneration Номер поколения, в котором рождена клетка
  */
-class Cell(private val borned: Long) {
+class Cell(bornGeneration: Long) {
 
     private val paint = Paint()
 
     init {
-        paint.color = when (borned % 7) {
+        paint.color = when (bornGeneration % 7) {
             0L -> Color.RED
             1L -> Color.GRAY
             2L -> Color.YELLOW

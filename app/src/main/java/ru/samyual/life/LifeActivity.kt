@@ -19,4 +19,14 @@ class LifeActivity : Activity() {
         game = GameOfLife(this, screenSize)
         setContentView(game)
     }
+
+    override fun onResume() {
+        super.onResume()
+        game.resume()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        game.pause()
+    }
 }

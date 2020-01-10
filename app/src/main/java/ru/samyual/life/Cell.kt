@@ -12,8 +12,9 @@ class Cell {
     private var age = 0L
 
     // Увеличить возраст клетки
-    fun grow() {
+    fun grow(): Cell {
         age += 1
+        return this
     }
 
     /**

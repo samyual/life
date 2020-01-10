@@ -9,14 +9,10 @@ import android.util.Log
 import android.view.MotionEvent
 import android.view.MotionEvent.*
 import android.view.SurfaceView
-import kotlin.random.Random
 
 class GameOfLife(context: Context, private val screenSize: Point) : SurfaceView(context), Runnable {
 
     companion object {
-
-        // Количество клеток, отображаемых в строке
-        private const val cellsPerLine = 50
 
         // Количество кадров в секунду (один кадр = одно поколение)
         private const val targetFPS: Long = 2
@@ -29,11 +25,8 @@ class GameOfLife(context: Context, private val screenSize: Point) : SurfaceView(
     // Размер шрифта (5% от высоты экрана)
     private val fontSize: Float = screenSize.y / 20f
 
-    // Колония клеток
-    private val colony = Colony(
-        screenSize,
-        randomColony()
-    )
+    // Мир
+    private val world = World(screenSize)
 
     // Признак паузы игры
     private var isPaused = false
@@ -71,7 +64,7 @@ class GameOfLife(context: Context, private val screenSize: Point) : SurfaceView(
 
             if (!isPaused) {
                 if (updateRequired()) {
-                    update()
+                    world.update()
                 }
             }
 
@@ -114,11 +107,6 @@ class GameOfLife(context: Context, private val screenSize: Point) : SurfaceView(
         return true
     }
 
-    // Внести изменения в колонию
-    private fun update() {
-        colony.nextGeneration()
-    }
-
     // Рисовать колонию и информационную панель
     private fun draw() {
 
@@ -128,10 +116,7 @@ class GameOfLife(context: Context, private val screenSize: Point) : SurfaceView(
             val canvas = holder.lockCanvas()
 
             // Отрисовать колонию
-            colony.draw(canvas)
-
-            // Отрисовать информационную панель
-            drawInfo(canvas)
+            world.draw(canvas)
 
             // Игра на паузе
             if (isPaused) {
@@ -145,16 +130,6 @@ class GameOfLife(context: Context, private val screenSize: Point) : SurfaceView(
         }
     }
 
-    // Нарисовать информационную панель
-    private fun drawInfo(canvas: Canvas) {
-        val paint = Paint().apply {
-            color = Color.BLUE
-            textSize = fontSize
-        }
-        canvas.drawText("Generation ${colony.generation}", 10f, fontSize, paint)
-        canvas.drawText("Live cells ${colony.size}", 10f, fontSize * 2, paint)
-    }
-
     // Нарисовать заставку
     private fun drawSplash(canvas: Canvas) {
 
@@ -163,14 +138,5 @@ class GameOfLife(context: Context, private val screenSize: Point) : SurfaceView(
             color = Color.BLUE
         }
         canvas.drawText("Pause", 20f, screenSize.y / 20f * 10.5f, paint)
-    }
-
-    // Генерация случайной колонии
-    private fun randomColony(): List<Point> {
-        val list = mutableListOf<Point>()
-        (1..cellsPerLine * 10).forEach { _ ->
-            list += Point(Random.nextInt(cellsPerLine), Random.nextInt(cellsPerLine))
-        }
-        return list
     }
 }

@@ -23,6 +23,10 @@ class Arrows(
         Left(270f)
     }
 
+    companion object {
+        val paint = Paint()
+    }
+
     private val bitmapCache = mutableMapOf<Direction, Bitmap>()
 
     init {
@@ -53,7 +57,7 @@ class Arrows(
         }
     }
 
-    fun draw(canvas: Canvas, paint: Paint, direction: Direction) {
+    fun draw(canvas: Canvas, direction: Direction) {
         canvas.drawBitmap(
             bitmapCache[direction]!!,
             positionCache[direction]!!.x,

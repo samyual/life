@@ -62,16 +62,16 @@ class World(context: Context, private val screenSize: Size) {
 
         // Нарисовать стрелки, если имеются клетки за границами экрана
         if (verticalRange.first < 0) {
-            arrows.draw(canvas, arrowPaint, Arrows.Direction.Up)
+            arrows.draw(canvas, Arrows.Direction.Up)
         }
         if (verticalRange.last > cellsOnScreen.height) {
-            arrows.draw(canvas, arrowPaint, Arrows.Direction.Down)
+            arrows.draw(canvas, Arrows.Direction.Down)
         }
         if (horizontalRange.first < 0) {
-            arrows.draw(canvas, arrowPaint, Arrows.Direction.Left)
+            arrows.draw(canvas, Arrows.Direction.Left)
         }
         if (horizontalRange.last > cellsOnScreen.width) {
-            arrows.draw(canvas, arrowPaint, Arrows.Direction.Right)
+            arrows.draw(canvas, Arrows.Direction.Right)
         }
 
         // Нарисовать все живые клетки, попадающие в границы холста

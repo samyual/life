@@ -10,7 +10,7 @@ import android.util.Log
 import android.util.Size
 import android.view.GestureDetector
 import android.view.MotionEvent
-import android.view.MotionEvent.ACTION_MASK
+import android.view.MotionEvent.*
 import android.view.SurfaceView
 
 @SuppressLint("ViewConstructor")
@@ -66,8 +66,8 @@ class GameOfLife(context: Context, private val screenSize: Point) :
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent): Boolean {
         when (event.action and ACTION_MASK) {
-            //ACTION_DOWN -> isPaused = true
-            //ACTION_UP -> isPaused = false
+            ACTION_DOWN -> isPaused = true
+            ACTION_UP -> isPaused = false
             else -> if (gestureDetector.onTouchEvent(event)) return true
         }
         return true

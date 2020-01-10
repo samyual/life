@@ -26,12 +26,13 @@ class World(context: Context, private val screenSize: Size) {
         screenSize.height / cellSize.height
     )
 
+    // Координаты окна просмотра колонии (в клетках)
     private val viewport: Rect = Rect(
         0, 0, cellsOnScreen.width, cellsOnScreen.width
     )
 
     // Колония клеток
-    private val colony = Colony(randomColony())
+    private val colony = Colony(randomColony(100, 100))
 
     // Характеристики информационной панели
     private val infoFontSize = screenSize.height / 20f
@@ -110,14 +111,18 @@ class World(context: Context, private val screenSize: Size) {
                     "${colony.verticalRange.last - colony.verticalRange.first - 1}",
             infoLeftMargin, infoFontSize * 3, paint
         )
+        canvas.drawText(
+            "View ${viewport.left}:${viewport.right}-${viewport.top}:${viewport.bottom}",
+            infoLeftMargin, infoFontSize * 4, paint
+        )
     }
 
-    private fun randomColony(): List<Position> {
+    private fun randomColony(width: Int, height: Int): List<Position> {
         val addressList = mutableListOf<Position>()
-        (0..(cellsOnScreen.width * cellsOnScreen.height * 0.25).toInt()).forEach { _ ->
+        (0..(width * height * 0.25).toInt()).forEach { _ ->
             addressList += Position(
-                x = Random.nextInt(cellsOnScreen.width),
-                y = Random.nextInt(cellsOnScreen.height)
+                x = Random.nextInt(width),
+                y = Random.nextInt(height)
             )
         }
         return addressList

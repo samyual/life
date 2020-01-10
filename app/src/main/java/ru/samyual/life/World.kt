@@ -9,7 +9,7 @@ import kotlin.random.Random
  * Класс "Мир", отвечает за отображение колонии клеток
  * @param screenSize размеры экрана в пикселях
  */
-class World(val context: Context, private val screenSize: Size) {
+class World(private val context: Context, private val screenSize: Size) {
 
     // Количеств клеток в строке
     private val cellsPerLine = 50
@@ -97,17 +97,18 @@ class World(val context: Context, private val screenSize: Size) {
         val verticalRange = colony.verticalRange
 
         // Нарисовать стрелки, если имеются клетки за границами экрана
+        // Стрелки сигнализируют, что имеются клетки за границами окна
         if (verticalRange.first < viewport.top) {
-            arrows.draw(canvas, Arrows.Direction.Down)
-        }
-        if (verticalRange.last > viewport.bottom) {
             arrows.draw(canvas, Arrows.Direction.Up)
         }
+        if (verticalRange.last > viewport.bottom) {
+            arrows.draw(canvas, Arrows.Direction.Down)
+        }
         if (horizontalRange.first < viewport.left) {
-            arrows.draw(canvas, Arrows.Direction.Right)
+            arrows.draw(canvas, Arrows.Direction.Left)
         }
         if (horizontalRange.last > viewport.right) {
-            arrows.draw(canvas, Arrows.Direction.Left)
+            arrows.draw(canvas, Arrows.Direction.Right)
         }
 
         colony.draw(canvas, viewport, cellSize)
@@ -134,7 +135,7 @@ class World(val context: Context, private val screenSize: Size) {
             textSize = infoFontSize
         }
         canvas.drawText(
-            context.getString(R.string.generationNumber, colony.generation),
+            context.getString(R.string.generation_number, colony.generation),
             infoLeftMargin, infoFontSize, paint
         )
         canvas.drawText(

@@ -4,23 +4,16 @@ import android.graphics.*
 
 /**
  * Живая клетка
- * @param bornGeneration Номер поколения, в котором рождена клетка
  */
-class Cell(bornGeneration: Long) {
+class Cell {
 
     private val paint = Paint()
 
-    init {
-        paint.color = when (bornGeneration % 7) {
-            0L -> Color.RED
-            1L -> Color.GRAY
-            2L -> Color.YELLOW
-            3L -> Color.GREEN
-            4L -> Color.CYAN
-            5L -> Color.BLUE
-            6L -> Color.MAGENTA
-            else -> Color.BLACK
-        }
+    private var age = 0L
+
+    // Увеличить возраст клетки
+    fun grow() {
+        age += 1
     }
 
     /**
@@ -38,6 +31,8 @@ class Cell(bornGeneration: Long) {
             top = (address.y * size.y).toFloat()
             bottom = top + size.y
         }
+
+        paint.color = if (age > 0) Color.BLACK else Color.GRAY
 
         canvas.drawOval(rect, paint)
     }

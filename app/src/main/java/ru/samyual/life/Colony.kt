@@ -54,7 +54,7 @@ class Colony(screenSize: Point, initial: List<Point> = listOf()) {
             y = screenSize.x / CELLS_PER_LINE
         }
         initial.forEach {
-            cells[it] = Cell(generation)
+            cells[it] = Cell()
         }
     }
 
@@ -97,7 +97,7 @@ class Colony(screenSize: Point, initial: List<Point> = listOf()) {
                     null -> {
                         // В пустой клетке с тремя соседями зарождается жизнь
                         if (numberOfNeighbors(x, y) == 3) {
-                            newCells[address] = Cell(generation)
+                            newCells[address] = Cell()
                         }
                     }
 
@@ -105,6 +105,7 @@ class Colony(screenSize: Point, initial: List<Point> = listOf()) {
                     else -> {
                         if (numberOfNeighbors(x, y) in 2..3) {
                             newCells[address] = this[x, y]!!
+                            newCells[address]?.grow()
                         }
                     }
                 }

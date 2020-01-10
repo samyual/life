@@ -9,13 +9,10 @@ import kotlin.random.Random
  * Класс "Мир", отвечает за отображение колонии клеток
  * @param screenSize размеры экрана в пикселях
  */
-class World(context: Context, private val screenSize: Size) {
+class World(val context: Context, private val screenSize: Size) {
 
-    companion object {
-        // Количеств клеток в строке
-        const val cellsPerLine = 50
-        val arrowPaint = Paint().apply { color = Color.WHITE }
-    }
+    // Количеств клеток в строке
+    private val cellsPerLine = 50
 
     // Размеры клетки в пикселях на экране
     private val cellSize = Size(
@@ -29,8 +26,13 @@ class World(context: Context, private val screenSize: Size) {
         screenSize.height / cellSize.height
     )
 
+    // Координаты окна просмотра колонии (в клетках)
+    private val viewport: Rect = Rect(
+        0, 0, cellsOnScreen.width, cellsOnScreen.width
+    )
+
     // Колония клеток
-    private val colony = Colony(randomColony())
+    private val colony = Colony(randomColony(100, 100))
 
     // Характеристики информационной панели
     private val infoFontSize = screenSize.height / 20f
@@ -42,6 +44,40 @@ class World(context: Context, private val screenSize: Size) {
     )
     private val arrowSize = Size(screenSize.height / 10, screenSize.height / 10)
     private val arrows = Arrows(arrowBitmap, arrowSize, screenSize)
+
+
+    // Перенести окно просмотра на указанное число клеток
+    // Коэффициент 2 нужен для "оживления" прокрутки
+    fun moveOn(distanceX: Float, distanceY: Float) {
+        // Вычислить координаты окна
+        viewport.apply {
+            top += (2 * distanceY / cellSize.height).toInt()
+            bottom = top + cellsOnScreen.height
+            left += (2 * distanceX / cellSize.width).toInt()
+            right = left + cellsOnScreen.width
+        }
+
+        // Проверить выход за границу колонии
+        // Важен порядок проверки границ!
+        with(viewport) {
+            if (bottom > colony.verticalRange.last) {
+                bottom = colony.verticalRange.last
+                top = bottom - cellsOnScreen.height
+            }
+            if (top < colony.verticalRange.first) {
+                top = colony.verticalRange.first
+                bottom = top + cellsOnScreen.height
+            }
+            if (right > colony.horizontalRange.last) {
+                right = colony.horizontalRange.last
+                left = right - cellsOnScreen.width
+            }
+            if (left < colony.horizontalRange.first) {
+                left = colony.horizontalRange.first
+                right = left + cellsOnScreen.width
+            }
+        }
+    }
 
     fun update() {
         colony.nextGeneration()
@@ -61,50 +97,73 @@ class World(context: Context, private val screenSize: Size) {
         val verticalRange = colony.verticalRange
 
         // Нарисовать стрелки, если имеются клетки за границами экрана
-        if (verticalRange.first < 0) {
-            arrows.draw(canvas, Arrows.Direction.Up)
-        }
-        if (verticalRange.last > cellsOnScreen.height) {
+        if (verticalRange.first < viewport.top) {
             arrows.draw(canvas, Arrows.Direction.Down)
         }
-        if (horizontalRange.first < 0) {
-            arrows.draw(canvas, Arrows.Direction.Left)
+        if (verticalRange.last > viewport.bottom) {
+            arrows.draw(canvas, Arrows.Direction.Up)
         }
-        if (horizontalRange.last > cellsOnScreen.width) {
+        if (horizontalRange.first < viewport.left) {
             arrows.draw(canvas, Arrows.Direction.Right)
         }
-
-        // Нарисовать все живые клетки, попадающие в границы холста
-        colony.filter {
-            it.key.x in 0 until cellsOnScreen.width && it.key.y in 0 until cellsOnScreen.height
-        }.forEach { (point, cell) ->
-            cell.draw(canvas, point, cellSize)
+        if (horizontalRange.last > viewport.right) {
+            arrows.draw(canvas, Arrows.Direction.Left)
         }
 
-        drawInfoPanel(canvas)
+        colony.draw(canvas, viewport, cellSize)
+
+        drawInformation(canvas)
     }
 
-    private fun drawInfoPanel(canvas: Canvas) {
+    // Вывести надпись "ПАУЗА"
+    fun drawPause(canvas: Canvas) {
+        val paint = Paint().apply {
+            color = Color.RED
+            textSize = infoFontSize * 2
+        }
+        canvas.drawText(
+            context.getString(R.string.pause),
+            infoLeftMargin, infoFontSize * 6, paint
+        )
+    }
+
+    // Вывести информационную панель
+    private fun drawInformation(canvas: Canvas) {
         val paint = Paint().apply {
             color = Color.BLUE
             textSize = infoFontSize
         }
         canvas.drawText(
-            "Generation ${colony.generation}",
+            context.getString(R.string.generationNumber, colony.generation),
             infoLeftMargin, infoFontSize, paint
         )
         canvas.drawText(
-            "Live cells ${colony.size}",
+            context.getString(R.string.live_cells, colony.size),
             infoLeftMargin, infoFontSize * 2, paint
+        )
+        canvas.drawText(
+            context.getString(
+                R.string.area,
+                colony.horizontalRange.last - colony.horizontalRange.first + 1,
+                colony.verticalRange.last - colony.verticalRange.first - 1
+            ),
+            infoLeftMargin, infoFontSize * 3, paint
+        )
+        canvas.drawText(
+            context.getString(
+                R.string.viewport,
+                viewport.left, viewport.right, viewport.top, viewport.bottom
+            ),
+            infoLeftMargin, infoFontSize * 4, paint
         )
     }
 
-    private fun randomColony(): List<Point> {
-        val addressList = mutableListOf<Point>()
-        (1..cellsPerLine * 10).forEach { _ ->
-            addressList += Point(
-                Random.nextInt(cellsOnScreen.width),
-                Random.nextInt(cellsOnScreen.height)
+    private fun randomColony(width: Int, height: Int): List<Position> {
+        val addressList = mutableListOf<Position>()
+        (0..(width * height * 0.25).toInt()).forEach { _ ->
+            addressList += Position(
+                x = Random.nextInt(width),
+                y = Random.nextInt(height)
             )
         }
         return addressList

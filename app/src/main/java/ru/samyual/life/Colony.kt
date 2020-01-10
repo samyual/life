@@ -1,27 +1,32 @@
 package ru.samyual.life
 
-import android.graphics.Canvas
-import android.graphics.Color
-import android.graphics.Point
-import android.graphics.Rect
+import android.graphics.*
 
 /**
  * Колония клеток, развивающася по классическим правилам
  * игры "Жизнь" Конвея
- * @param cellSize размер ячейки в пикселях для отрисовки на холсте
+ * @param screenSize размеры экрана в пикселях
  * @param initial начальный список адресов живых ячеек
  */
-class Colony(private val cellSize: Point, initial: List<Point> = listOf()) {
+class Colony(screenSize: Point, initial: List<Point> = listOf()) {
+
+    companion object {
+        const val CELLS_PER_LINE = 50
+    }
 
     // Поколение колонии
     var generation: Long = 1
         private set
 
+    // Размер колонии (количество живых клеток)
     val size: Int
         get() = cells.size
 
     // Хранилище живых клеток
     private val cells = mutableMapOf<Point, Cell>()
+
+    // Следующее поколение клеток
+    private val newCells = mutableMapOf<Point, Cell>()
 
     // Возвращает диапазон адресов по горизонтали, к которым необходимо
     // применить правила жизни
@@ -32,7 +37,22 @@ class Colony(private val cellSize: Point, initial: List<Point> = listOf()) {
     private val verticalRange: IntRange
         get() = getVerticalMinMax()
 
+    // Размеры клетки в пикселях на экране
+    private val cellSize: Point
+
+    // Стрелки направления
+    private val arrows = mapOf(
+        Arrow.Direction.UP to Arrow(Arrow.Direction.UP, screenSize),
+        Arrow.Direction.DOWN to Arrow(Arrow.Direction.DOWN, screenSize),
+        Arrow.Direction.LEFT to Arrow(Arrow.Direction.LEFT, screenSize),
+        Arrow.Direction.RIGHT to Arrow(Arrow.Direction.RIGHT, screenSize)
+    )
+
     init {
+        cellSize = Point().apply {
+            x = screenSize.x / CELLS_PER_LINE
+            y = screenSize.x / CELLS_PER_LINE
+        }
         initial.forEach {
             cells[it] = Cell(generation)
         }
@@ -65,8 +85,8 @@ class Colony(private val cellSize: Point, initial: List<Point> = listOf()) {
     fun nextGeneration() {
         generation += 1
 
-        // Колония следующего поколения
-        val nextColony = mutableMapOf<Point, Cell>()
+        // Очистить колонию следующего поколения
+        newCells.clear()
 
         for (x in horizontalRange) {
             for (y in verticalRange) {
@@ -77,23 +97,25 @@ class Colony(private val cellSize: Point, initial: List<Point> = listOf()) {
                     null -> {
                         // В пустой клетке с тремя соседями зарождается жизнь
                         if (numberOfNeighbors(x, y) == 3) {
-                            nextColony[address] = Cell(generation)
+                            newCells[address] = Cell(generation)
                         }
                     }
 
                     // Живая клетка
                     else -> {
                         if (numberOfNeighbors(x, y) in 2..3) {
-                            nextColony[address] = this[x, y]!!
+                            newCells[address] = this[x, y]!!
                         }
                     }
                 }
             }
         }
+
         cells.clear()
-        cells.putAll(nextColony)
+        cells.putAll(newCells)
     }
 
+    // Границы просмотра колонии по горизонтали
     private fun getHorizontalMinMax(): IntRange {
         return if (cells.isEmpty()) {
             IntRange.EMPTY
@@ -104,6 +126,7 @@ class Colony(private val cellSize: Point, initial: List<Point> = listOf()) {
         }
     }
 
+    // Границы просмотра колонии по вертикали
     private fun getVerticalMinMax(): IntRange {
         return if (cells.isEmpty()) {
             IntRange.EMPTY
@@ -131,15 +154,58 @@ class Colony(private val cellSize: Point, initial: List<Point> = listOf()) {
         // Рисовать фон
         canvas.drawColor(Color.WHITE)
 
-        // Рисовать все живые клетки, попадающие в заданные границы
-        cells
-            .filter {
-                it.key.x in bounds.left until bounds.right &&
-                        it.key.y in bounds.top until bounds.bottom
-            }
-            .forEach { (point, cell) ->
-                cell.draw(canvas, point, cellSize)
-            }
+        // Вычислить границы холста в размерах клетки
+        val horizontalBounds = bounds.left until bounds.right
+        val verticalBounds = bounds.top until bounds.bottom
+
+        // Нарисовать стрелки, если имеются клетки за границами экрана
+        if (verticalRange.first < verticalBounds.first) {
+            arrows[Arrow.Direction.UP]?.draw(canvas)
+        }
+        if (verticalRange.last > verticalBounds.last) {
+            arrows[Arrow.Direction.DOWN]?.draw(canvas)
+        }
+        if (horizontalRange.first < horizontalBounds.first) {
+            arrows[Arrow.Direction.LEFT]?.draw(canvas)
+        }
+        if (horizontalRange.last > horizontalBounds.last) {
+            arrows[Arrow.Direction.RIGHT]?.draw(canvas)
+        }
+
+        // Нарисовать все живые клетки, попадающие в границы холста
+        cells.filter {
+            it.key.x in horizontalBounds && it.key.y in verticalBounds
+        }.forEach { (point, cell) ->
+            cell.draw(canvas, point, cellSize)
+        }
+    }
+
+    private fun drawUpArrow(canvas: Canvas) {
+        val size = canvas.width / 20
+        val rect = RectF().apply {
+            top = 0f
+            bottom = size.toFloat()
+            left = ((canvas.width - size) / 2).toFloat()
+            right = ((canvas.width + size) / 2).toFloat()
+        }
+        val paint = Paint().apply {
+            color = Color.argb(64, 0, 0, 128)
+        }
+        canvas.drawOval(rect, paint)
+    }
+
+    private fun drawDownArrow(canvas: Canvas) {
+        val size = canvas.width / 20
+        val rect = RectF().apply {
+            top = (canvas.height - size).toFloat()
+            bottom = canvas.height.toFloat()
+            left = (canvas.width - size) / 2f
+            right = (canvas.width + size) / 2f
+        }
+        val paint = Paint().apply {
+            color = Color.argb(64, 0, 0, 128)
+        }
+        canvas.drawOval(rect, paint)
     }
 
     /**

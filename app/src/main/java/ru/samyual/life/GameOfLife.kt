@@ -7,8 +7,7 @@ import android.graphics.Paint
 import android.graphics.Point
 import android.util.Log
 import android.view.MotionEvent
-import android.view.MotionEvent.ACTION_MASK
-import android.view.MotionEvent.ACTION_UP
+import android.view.MotionEvent.*
 import android.view.SurfaceView
 import kotlin.random.Random
 
@@ -20,17 +19,11 @@ class GameOfLife(context: Context, private val screenSize: Point) : SurfaceView(
         private const val cellsPerLine = 50
 
         // Количество кадров в секунду (один кадр = одно поколение)
-        private const val targetFPS: Long = 4
+        private const val targetFPS: Long = 2
 
         // Количество миллисекунд в секунде
         private const val millisPerSecond: Long = 1_000
 
-    }
-
-    // Размеры клеток на экране
-    private val cellSize = Point().apply {
-        x = screenSize.x / cellsPerLine
-        y = x
     }
 
     // Размер шрифта (5% от высоты экрана)
@@ -38,12 +31,12 @@ class GameOfLife(context: Context, private val screenSize: Point) : SurfaceView(
 
     // Колония клеток
     private val colony = Colony(
-        cellSize,
+        screenSize,
         randomColony()
     )
 
     // Признак паузы игры
-    private var isPaused = true
+    private var isPaused = false
 
     // Игра в процессе
     private var isPlaying = false
@@ -57,16 +50,15 @@ class GameOfLife(context: Context, private val screenSize: Point) : SurfaceView(
     // Обработка нажатий
     override fun onTouchEvent(event: MotionEvent?): Boolean {
 
-        // TODO: Перемещение окна по колонии
-
-        // TODO: Масштабирование по щипкам
-
         event?.let {
 
             when (event.action and ACTION_MASK) {
 
+                // Пользователь нажал пальцем на экран
+                ACTION_DOWN -> isPaused = true
+
                 // Пользователь убрал палец от экрана
-                ACTION_UP -> isPaused = !isPaused
+                ACTION_UP -> isPaused = false
             }
         }
 
@@ -170,7 +162,7 @@ class GameOfLife(context: Context, private val screenSize: Point) : SurfaceView(
             textSize = screenSize.x / 20f
             color = Color.BLUE
         }
-        canvas.drawText("Pause. Tap to play", 20f, screenSize.y / 20f * 10.5f, paint)
+        canvas.drawText("Pause", 20f, screenSize.y / 20f * 10.5f, paint)
     }
 
     // Генерация случайной колонии

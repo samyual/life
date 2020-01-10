@@ -49,11 +49,33 @@ class World(val context: Context, private val screenSize: Size) {
     // Перенести окно просмотра на указанное число клеток
     // Коэффициент 2 нужен для "оживления" прокрутки
     fun moveOn(distanceX: Float, distanceY: Float) {
+        // Вычислить координаты окна
         viewport.apply {
             top += (2 * distanceY / cellSize.height).toInt()
             bottom = top + cellsOnScreen.height
             left += (2 * distanceX / cellSize.width).toInt()
             right = left + cellsOnScreen.width
+        }
+
+        // Проверить выход за границу колонии
+        // Важен порядок проверки границ!
+        with(viewport) {
+            if (bottom > colony.verticalRange.last) {
+                bottom = colony.verticalRange.last
+                top = bottom - cellsOnScreen.height
+            }
+            if (top < colony.verticalRange.first) {
+                top = colony.verticalRange.first
+                bottom = top + cellsOnScreen.height
+            }
+            if (right > colony.horizontalRange.last) {
+                right = colony.horizontalRange.last
+                left = right - cellsOnScreen.width
+            }
+            if (left < colony.horizontalRange.first) {
+                left = colony.horizontalRange.first
+                right = left + cellsOnScreen.width
+            }
         }
     }
 
@@ -105,6 +127,7 @@ class World(val context: Context, private val screenSize: Size) {
         )
     }
 
+    // Вывести информационную панель
     private fun drawInformation(canvas: Canvas) {
         val paint = Paint().apply {
             color = Color.BLUE

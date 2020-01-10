@@ -9,7 +9,7 @@ import kotlin.random.Random
  * Класс "Мир", отвечает за отображение колонии клеток
  * @param screenSize размеры экрана в пикселях
  */
-class World(context: Context, private val screenSize: Size) {
+class World(val context: Context, private val screenSize: Size) {
 
     // Количеств клеток в строке
     private val cellsPerLine = 50
@@ -93,12 +93,16 @@ class World(context: Context, private val screenSize: Size) {
         drawInformation(canvas)
     }
 
+    // Вывести надпись "ПАУЗА"
     fun drawPause(canvas: Canvas) {
         val paint = Paint().apply {
             color = Color.RED
             textSize = infoFontSize * 2
         }
-        canvas.drawText("PAUSE", infoLeftMargin, infoFontSize * 6, paint)
+        canvas.drawText(
+            context.getString(R.string.pause),
+            infoLeftMargin, infoFontSize * 6, paint
+        )
     }
 
     private fun drawInformation(canvas: Canvas) {
@@ -107,20 +111,26 @@ class World(context: Context, private val screenSize: Size) {
             textSize = infoFontSize
         }
         canvas.drawText(
-            "Generation ${colony.generation}",
+            context.getString(R.string.generationNumber, colony.generation),
             infoLeftMargin, infoFontSize, paint
         )
         canvas.drawText(
-            "Live cells ${colony.size}",
+            context.getString(R.string.live_cells, colony.size),
             infoLeftMargin, infoFontSize * 2, paint
         )
         canvas.drawText(
-            "Area ${colony.horizontalRange.last - colony.horizontalRange.first + 1} x " +
-                    "${colony.verticalRange.last - colony.verticalRange.first - 1}",
+            context.getString(
+                R.string.area,
+                colony.horizontalRange.last - colony.horizontalRange.first + 1,
+                colony.verticalRange.last - colony.verticalRange.first - 1
+            ),
             infoLeftMargin, infoFontSize * 3, paint
         )
         canvas.drawText(
-            "View ${viewport.left}:${viewport.right}-${viewport.top}:${viewport.bottom}",
+            context.getString(
+                R.string.viewport,
+                viewport.left, viewport.right, viewport.top, viewport.bottom
+            ),
             infoLeftMargin, infoFontSize * 4, paint
         )
     }

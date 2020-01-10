@@ -1,5 +1,6 @@
 package ru.samyual.life
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
@@ -7,16 +8,20 @@ import android.graphics.Paint
 import android.graphics.Point
 import android.util.Log
 import android.util.Size
+import android.view.GestureDetector
 import android.view.MotionEvent
-import android.view.MotionEvent.*
+import android.view.MotionEvent.ACTION_MASK
 import android.view.SurfaceView
 
-class GameOfLife(context: Context, private val screenSize: Point) : SurfaceView(context), Runnable {
+@SuppressLint("ViewConstructor")
+class GameOfLife(context: Context, private val screenSize: Point) :
+    SurfaceView(context),
+    Runnable {
 
     companion object {
 
         // Количество кадров в секунду (один кадр = одно поколение)
-        private const val targetFPS: Long = 2
+        private const val targetFPS: Long = 4
 
         // Количество миллисекунд в секунде
         private const val millisPerSecond: Long = 1_000
@@ -38,21 +43,33 @@ class GameOfLife(context: Context, private val screenSize: Point) : SurfaceView(
     // Время для отображение следующего кадра
     private var timeOfNextFrame: Long = 0
 
-    // Обработка нажатий
-    override fun onTouchEvent(event: MotionEvent?): Boolean {
-
-        event?.let {
-
-            when (event.action and ACTION_MASK) {
-
-                // Пользователь нажал пальцем на экран
-                ACTION_DOWN -> isPaused = true
-
-                // Пользователь убрал палец от экрана
-                ACTION_UP -> isPaused = false
-            }
+    inner class WorldGestureListener : GestureDetector.SimpleOnGestureListener() {
+        override fun onScroll(
+            e1: MotionEvent?,
+            e2: MotionEvent?,
+            distanceX: Float,
+            distanceY: Float
+        ): Boolean {
+            Log.d("DEBUG", "onScroll(distanceX=$distanceX, distanceY=$distanceY")
+            world.moveOn(distanceX, distanceY)
+            return true
         }
+    }
 
+    private val gestureDetector: GestureDetector
+
+    init {
+        gestureDetector = GestureDetector(context, WorldGestureListener())
+    }
+
+    // Обработка нажатий
+    @SuppressLint("ClickableViewAccessibility")
+    override fun onTouchEvent(event: MotionEvent): Boolean {
+        when (event.action and ACTION_MASK) {
+            //ACTION_DOWN -> isPaused = true
+            //ACTION_UP -> isPaused = false
+            else -> if (gestureDetector.onTouchEvent(event)) return true
+        }
         return true
     }
 

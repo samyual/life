@@ -1,7 +1,9 @@
 package ru.samyual.life
 
-import android.graphics.*
-import android.util.Size
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
+import android.graphics.RectF
 
 /**
  * Живая клетка
@@ -21,21 +23,12 @@ class Cell {
     /**
      * Рисовать клетку
      * @param canvas заданный холст
-     * @param position адрес клетки
-     * @param size размеры клетки на холсте
+     * @param boundRect положение на холсте
      */
-    fun draw(canvas: Canvas, position: Point, size: Size) {
-
-        // Вычислить положение и размеры клетки
-        val rect = RectF().apply {
-            left = (position.x * size.width).toFloat()
-            right = left + size.width
-            top = (position.y * size.height).toFloat()
-            bottom = top + size.height
-        }
+    fun draw(canvas: Canvas, boundRect: RectF) {
 
         paint.color = if (age > 0) Color.BLACK else Color.GRAY
 
-        canvas.drawOval(rect, paint)
+        canvas.drawOval(boundRect, paint)
     }
 }

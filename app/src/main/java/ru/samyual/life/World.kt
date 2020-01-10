@@ -1,43 +1,47 @@
 package ru.samyual.life
 
+import android.content.Context
 import android.graphics.*
+import android.util.Size
 import kotlin.random.Random
 
 /**
  * Класс "Мир", отвечает за отображение колонии клеток
  * @param screenSize размеры экрана в пикселях
  */
-class World(screenSize: Point) {
+class World(context: Context, private val screenSize: Size) {
 
     companion object {
-        const val CELLS_PER_LINE = 50
+        // Количеств клеток в строке
+        const val cellsPerLine = 50
+        val arrowPaint = Paint().apply { color = Color.WHITE }
     }
 
     // Размеры клетки в пикселях на экране
-    private val cellSize = Point().apply {
-        x = screenSize.x / CELLS_PER_LINE
-        y = screenSize.x / CELLS_PER_LINE
-    }
+    private val cellSize = Size(
+        screenSize.width / cellsPerLine,
+        screenSize.width / cellsPerLine
+    )
 
     // Количество клеток по горизонтали и вертикали на экране
-    private val cellsOnScreen = Point().apply {
-        x = screenSize.x / cellSize.x
-        y = screenSize.y / cellSize.y
-    }
+    private val cellsOnScreen = Size(
+        screenSize.width / cellSize.width,
+        screenSize.height / cellSize.height
+    )
 
     // Колония клеток
     private val colony = Colony(randomColony())
 
-    private val infoFontSize = screenSize.y / 20f
-    private val infoLeftMargin = screenSize.x / 100f
+    // Характеристики информационной панели
+    private val infoFontSize = screenSize.height / 20f
+    private val infoLeftMargin = screenSize.width / 100f
 
     // Стрелки направления
-    private val arrows = mapOf(
-        Arrow.Direction.UP to Arrow(Arrow.Direction.UP, screenSize),
-        Arrow.Direction.DOWN to Arrow(Arrow.Direction.DOWN, screenSize),
-        Arrow.Direction.LEFT to Arrow(Arrow.Direction.LEFT, screenSize),
-        Arrow.Direction.RIGHT to Arrow(Arrow.Direction.RIGHT, screenSize)
+    private val arrowBitmap: Bitmap = BitmapFactory.decodeResource(
+        context.resources, R.drawable.arrow
     )
+    private val arrowSize = Size(screenSize.height / 10, screenSize.height / 10)
+    private val arrows = Arrows(arrowBitmap, arrowSize, screenSize)
 
     fun update() {
         colony.nextGeneration()
@@ -49,39 +53,30 @@ class World(screenSize: Point) {
      */
     fun draw(canvas: Canvas) {
 
-        // Вычислить граница колонии клеток, попадающих в границы холста
-        // (в клетках)
-        val bounds: Rect = canvas.clipBounds.apply {
-            left /= cellSize.x
-            right /= cellSize.x
-            top /= cellSize.y
-            bottom /= cellSize.y
-        }
-
         // Рисовать фон
         canvas.drawColor(Color.WHITE)
 
-        // Вычислить границы холста в размерах клетки
-        val horizontalBounds = bounds.left until bounds.right
-        val verticalBounds = bounds.top until bounds.bottom
+        // Определить границы колонии в размерах клеток
+        val horizontalRange = colony.horizontalRange
+        val verticalRange = colony.verticalRange
 
         // Нарисовать стрелки, если имеются клетки за границами экрана
-        if (colony.verticalRange.first < verticalBounds.first) {
-            arrows[Arrow.Direction.UP]?.draw(canvas)
+        if (verticalRange.first < 0) {
+            arrows.draw(canvas, arrowPaint, Arrows.Direction.Up)
         }
-        if (colony.verticalRange.last > verticalBounds.last) {
-            arrows[Arrow.Direction.DOWN]?.draw(canvas)
+        if (verticalRange.last > cellsOnScreen.height) {
+            arrows.draw(canvas, arrowPaint, Arrows.Direction.Down)
         }
-        if (colony.horizontalRange.first < horizontalBounds.first) {
-            arrows[Arrow.Direction.LEFT]?.draw(canvas)
+        if (horizontalRange.first < 0) {
+            arrows.draw(canvas, arrowPaint, Arrows.Direction.Left)
         }
-        if (colony.horizontalRange.last > horizontalBounds.last) {
-            arrows[Arrow.Direction.RIGHT]?.draw(canvas)
+        if (horizontalRange.last > cellsOnScreen.width) {
+            arrows.draw(canvas, arrowPaint, Arrows.Direction.Right)
         }
 
         // Нарисовать все живые клетки, попадающие в границы холста
         colony.filter {
-            it.key.x in horizontalBounds && it.key.y in verticalBounds
+            it.key.x in 0 until cellsOnScreen.width && it.key.y in 0 until cellsOnScreen.height
         }.forEach { (point, cell) ->
             cell.draw(canvas, point, cellSize)
         }
@@ -89,7 +84,7 @@ class World(screenSize: Point) {
         drawInfoPanel(canvas)
     }
 
-    fun drawInfoPanel(canvas: Canvas) {
+    private fun drawInfoPanel(canvas: Canvas) {
         val paint = Paint().apply {
             color = Color.BLUE
             textSize = infoFontSize
@@ -106,8 +101,11 @@ class World(screenSize: Point) {
 
     private fun randomColony(): List<Point> {
         val addressList = mutableListOf<Point>()
-        (1..CELLS_PER_LINE * 10).forEach { _ ->
-            addressList += Point(Random.nextInt(cellsOnScreen.x), Random.nextInt(cellsOnScreen.y))
+        (1..cellsPerLine * 10).forEach { _ ->
+            addressList += Point(
+                Random.nextInt(cellsOnScreen.width),
+                Random.nextInt(cellsOnScreen.height)
+            )
         }
         return addressList
     }

@@ -6,6 +6,7 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Point
 import android.util.Log
+import android.util.Size
 import android.view.MotionEvent
 import android.view.MotionEvent.*
 import android.view.SurfaceView
@@ -22,11 +23,8 @@ class GameOfLife(context: Context, private val screenSize: Point) : SurfaceView(
 
     }
 
-    // Размер шрифта (5% от высоты экрана)
-    private val fontSize: Float = screenSize.y / 20f
-
     // Мир
-    private val world = World(screenSize)
+    private val world = World(context, Size(screenSize.x, screenSize.y))
 
     // Признак паузы игры
     private var isPaused = false

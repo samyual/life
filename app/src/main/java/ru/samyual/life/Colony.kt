@@ -27,7 +27,7 @@ class Colony(initial: List<Point>) {
     val size: Int
         get() = cells.size
 
-    // диапазон просмотра по горизонтали
+    // диапазон между минимальной и максимальной позициями клеток по горизонтали
     val horizontalRange: IntRange
         get() = if (cells.isEmpty()) {
             IntRange.EMPTY
@@ -38,10 +38,10 @@ class Colony(initial: List<Point>) {
             val last = cells.keys.reduce { max, address ->
                 if (max.x > address.x) max else address
             }.x
-            first..last
+            first - 1..last + 1
         }
 
-    // диапазон просмотра по вертикали
+    // диапазон между минимальной и максимальной позициями клеток по вертикали
     val verticalRange: IntRange
         get() = if (cells.isEmpty()) {
             IntRange.EMPTY
@@ -52,7 +52,7 @@ class Colony(initial: List<Point>) {
             val last = cells.keys.reduce { max, address ->
                 if (max.y > address.y) max else address
             }.y
-            first..last
+            first - 1..last + 1
         }
 
     operator fun get(x: Int, y: Int): Cell? = cells[Point(x, y)]

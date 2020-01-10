@@ -45,12 +45,13 @@ class World(context: Context, private val screenSize: Size) {
     private val arrows = Arrows(arrowBitmap, arrowSize, screenSize)
 
 
-    // Перенести окно просмотра на указанное число пикселов
+    // Перенести окно просмотра на указанное число клеток
+    // Коэффициент 2 нужен для "оживления" прокрутки
     fun moveOn(distanceX: Float, distanceY: Float) {
         viewport.apply {
-            top += (distanceY / cellSize.height).toInt()
+            top += (2 * distanceY / cellSize.height).toInt()
             bottom = top + cellsOnScreen.height
-            left += (distanceX / cellSize.width).toInt()
+            left += (2 * distanceX / cellSize.width).toInt()
             right = left + cellsOnScreen.width
         }
     }

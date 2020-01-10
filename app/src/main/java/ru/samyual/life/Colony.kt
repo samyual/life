@@ -116,9 +116,9 @@ class Colony(initial: List<Position>) {
     private fun neighbours(pos: Position): Int {
         // Число соседей
         var number = 0
-        for (xNeighbour in pos.x - 1..pos.x + 1) {
-            for (yNeighbour in pos.y - 1..pos.y + 1) {
-                if (cells[Position(xNeighbour, yNeighbour)] != null) number += 1
+        (pos.x - 1..pos.x + 1).forEach { xPos ->
+            (pos.y - 1..pos.y + 1).forEach { yPos ->
+                if (cells[Position(xPos, yPos)] != null) number += 1
             }
         }
         // Если клетка живая, убрать её из числа соседей

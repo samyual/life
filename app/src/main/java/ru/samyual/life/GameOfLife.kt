@@ -2,19 +2,17 @@ package ru.samyual.life
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.graphics.Canvas
-import android.graphics.Color
-import android.graphics.Paint
 import android.graphics.Point
 import android.util.Log
 import android.util.Size
 import android.view.GestureDetector
 import android.view.MotionEvent
-import android.view.MotionEvent.*
+import android.view.MotionEvent.ACTION_MASK
+import android.view.MotionEvent.ACTION_UP
 import android.view.SurfaceView
 
 @SuppressLint("ViewConstructor")
-class GameOfLife(context: Context, private val screenSize: Point) :
+class GameOfLife(context: Context, screenSize: Point) :
     SurfaceView(context),
     Runnable {
 
@@ -66,9 +64,15 @@ class GameOfLife(context: Context, private val screenSize: Point) :
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent): Boolean {
         when (event.action and ACTION_MASK) {
-            ACTION_DOWN -> isPaused = true
+
+            // При поднятии пальца снять с паузы
             ACTION_UP -> isPaused = false
-            else -> if (gestureDetector.onTouchEvent(event)) return true
+
+            // При скролле поставить на паузу
+            else -> if (gestureDetector.onTouchEvent(event)) {
+                isPaused = true
+                return true
+            }
         }
         return true
     }
@@ -137,21 +141,11 @@ class GameOfLife(context: Context, private val screenSize: Point) :
             if (isPaused) {
 
                 // Отрисовать заставку
-                drawSplash(canvas)
+                world.drawPause(canvas)
             }
 
             // Разблокировать и нарисовать
             holder.unlockCanvasAndPost(canvas)
         }
-    }
-
-    // Нарисовать заставку
-    private fun drawSplash(canvas: Canvas) {
-
-        val paint = Paint().apply {
-            textSize = screenSize.x / 20f
-            color = Color.BLUE
-        }
-        canvas.drawText("Pause", 20f, screenSize.y / 20f * 10.5f, paint)
     }
 }

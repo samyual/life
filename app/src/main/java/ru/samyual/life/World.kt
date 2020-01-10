@@ -93,6 +93,14 @@ class World(context: Context, private val screenSize: Size) {
         drawInformation(canvas)
     }
 
+    fun drawPause(canvas: Canvas) {
+        val paint = Paint().apply {
+            color = Color.RED
+            textSize = infoFontSize * 2
+        }
+        canvas.drawText("PAUSE", infoLeftMargin, infoFontSize * 6, paint)
+    }
+
     private fun drawInformation(canvas: Canvas) {
         val paint = Paint().apply {
             color = Color.BLUE

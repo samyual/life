@@ -5,6 +5,8 @@ import android.util.Size
 
 data class Position(val x: Int, val y: Int)
 
+typealias Age = Long
+
 /**
  * Колония клеток, развивающаяся по классическим правилам
  * игры "Жизнь" Конвея
@@ -12,7 +14,9 @@ data class Position(val x: Int, val y: Int)
 class Colony(initial: List<Position>) {
 
     // Хранилище клеток (только живых!)
-    private var cells = mutableMapOf<Position, Long>()
+    private var cells = mutableMapOf<Position, Age>()
+
+    operator fun get(x: Int, y: Int): Age? = cells[Position(x, y)]
 
     init {
         initial.forEach {
@@ -21,7 +25,7 @@ class Colony(initial: List<Position>) {
     }
 
     // Поколение колонии
-    var generation: Long = 1
+    var generation: Age = 1
         private set
 
     private val cellPaint = Paint()
@@ -72,16 +76,17 @@ class Colony(initial: List<Position>) {
     fun nextGeneration() {
         generation += 1
 
-        val newGeneration = mutableMapOf<Position, Long>()
+        val newGeneration = mutableMapOf<Position, Age>()
 
         for (x in horizontalRange) {
             for (y in verticalRange) {
-                when (cells[Position(x, y)]) {
-                    null -> if (neighbours(Position(x, y)) == 3) {
+                if (this[x, y] == null) {
+                    if (neighbours(x, y) == 3) {
                         newGeneration[Position(x, y)] = generation
                     }
-                    else -> if (neighbours(Position(x, y)) in 2..3) {
-                        newGeneration[Position(x, y)] = cells[Position(x, y)]!! + 1
+                } else {
+                    if (neighbours(x, y) in 2..3) {
+                        newGeneration[Position(x, y)] = this[x, y]!!
                     }
                 }
             }
@@ -92,6 +97,13 @@ class Colony(initial: List<Position>) {
         verticalRange = calculateVerticalRange()
     }
 
+    /**
+     * Нарисовать живые клетки колонии, попадающие в окно просмотра
+     *
+     * @param canvas холст
+     * @param viewport размеры окна просмотра (в клетках)
+     * @param size размеры клетки
+     */
     fun draw(canvas: Canvas, viewport: Rect, size: Size) {
         cells
             // отфильтровать клетки, попадающие в форточку
@@ -108,21 +120,27 @@ class Colony(initial: List<Position>) {
                     top = ((pos.y - viewport.top) * size.height).toFloat()
                     bottom = top + size.height
                 }
-                cellPaint.color = if (generation - cell > 0) Color.BLACK else Color.MAGENTA
+                // Чем старше клетка, тем темнее
+                cellPaint.color = when (generation - cell) {
+                    0L -> Color.LTGRAY
+                    1L -> Color.GRAY
+                    2L -> Color.DKGRAY
+                    else -> Color.BLACK
+                }
                 canvas.drawOval(rect, cellPaint)
             }
     }
 
     // Подсчет числа соседей у клетки с адресом row, col
-    private fun neighbours(pos: Position): Int {
+    private fun neighbours(posX: Int, posY: Int): Int {
         // Число соседей
         var number = 0
-        (pos.x - 1..pos.x + 1).forEach { xPos ->
-            (pos.y - 1..pos.y + 1).forEach { yPos ->
-                if (cells[Position(xPos, yPos)] != null) number += 1
+        (posX - 1..posX + 1).forEach { xPos ->
+            (posY - 1..posY + 1).forEach { yPos ->
+                if (this[xPos, yPos] != null) number += 1
             }
         }
         // Если клетка живая, убрать её из числа соседей
-        return if (cells[pos] != null) number - 1 else number
+        return if (this[posX, posY] != null) number - 1 else number
     }
 }

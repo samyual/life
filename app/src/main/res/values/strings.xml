@@ -1,10 +1,9 @@
 <resources>
     <string name="app_name">Life</string>
-    <string name="goppler_gun">Goppler\'s gun</string>
     <string name="app_title">Conway\'s Game of Life</string>
     <string name="button_play">Play</string>
     <string name="pause">PAUSE</string>
-    <string name="generationNumber">Generation %1$d</string>
+    <string name="generation_number">Generation %1$d</string>
     <string name="live_cells">Live cells %1$d</string>
     <string name="area">Area %1$d x %2$d</string>
     <string name="viewport">View %1$d:%2$d-%3$d:%4$d</string>

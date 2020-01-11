@@ -38,7 +38,7 @@ class World(private val context: Context, private val screenSize: Size) {
     private val infoFontSize = screenSize.height / 20f
     private val infoLeftMargin = screenSize.width / 100f
 
-    // Стрелки направления
+    // Стрелки, указывающие на наличие клеток за границей экрана
     private val arrowBitmap: Bitmap = BitmapFactory.decodeResource(
         context.resources, R.drawable.arrow
     )
@@ -47,7 +47,8 @@ class World(private val context: Context, private val screenSize: Size) {
 
 
     // Перенести окно просмотра на указанное число клеток
-    // Коэффициент 2 нужен для "оживления" прокрутки
+    // Коэффициент 2 нужен для "оживления" прокрутки,
+    // подобран опытным путём ;)
     fun moveOn(distanceX: Float, distanceY: Float) {
         // Вычислить координаты окна
         viewport.apply {

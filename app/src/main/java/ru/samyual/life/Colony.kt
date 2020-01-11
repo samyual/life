@@ -1,8 +1,6 @@
 package ru.samyual.life
 
-import android.graphics.Canvas
-import android.graphics.Rect
-import android.graphics.RectF
+import android.graphics.*
 import android.util.Size
 
 data class Position(val x: Int, val y: Int)
@@ -14,17 +12,19 @@ data class Position(val x: Int, val y: Int)
 class Colony(initial: List<Position>) {
 
     // Хранилище клеток (только живых!)
-    private var cells = mutableMapOf<Position, Cell>()
+    private var cells = mutableMapOf<Position, Long>()
 
     init {
         initial.forEach {
-            cells[it] = Cell()
+            cells[it] = generation
         }
     }
 
     // Поколение колонии
     var generation: Long = 1
         private set
+
+    private val cellPaint = Paint()
 
     /**
      *  Размер колонии (количество живых клеток)
@@ -72,16 +72,16 @@ class Colony(initial: List<Position>) {
     fun nextGeneration() {
         generation += 1
 
-        val newGeneration = mutableMapOf<Position, Cell>()
+        val newGeneration = mutableMapOf<Position, Long>()
 
         for (x in horizontalRange) {
             for (y in verticalRange) {
                 when (cells[Position(x, y)]) {
                     null -> if (neighbours(Position(x, y)) == 3) {
-                        newGeneration[Position(x, y)] = Cell()
+                        newGeneration[Position(x, y)] = generation
                     }
                     else -> if (neighbours(Position(x, y)) in 2..3) {
-                        newGeneration[Position(x, y)] = cells[Position(x, y)]!!.grow()
+                        newGeneration[Position(x, y)] = cells[Position(x, y)]!! + 1
                     }
                 }
             }
@@ -108,7 +108,8 @@ class Colony(initial: List<Position>) {
                     top = ((pos.y - viewport.top) * size.height).toFloat()
                     bottom = top + size.height
                 }
-                cell.draw(canvas, rect)
+                cellPaint.color = if (generation - cell > 0) Color.BLACK else Color.MAGENTA
+                canvas.drawOval(rect, cellPaint)
             }
     }
 

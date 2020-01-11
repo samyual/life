@@ -97,6 +97,9 @@ class World(private val context: Context, private val screenSize: Size) {
         val horizontalRange = colony.horizontalRange
         val verticalRange = colony.verticalRange
 
+        // Нарисовать колонию
+        colony.draw(canvas, viewport, cellSize)
+
         // Нарисовать стрелки, если имеются клетки за границами экрана
         // Стрелки сигнализируют, что имеются клетки за границами окна
         if (verticalRange.first < viewport.top) {
@@ -111,8 +114,6 @@ class World(private val context: Context, private val screenSize: Size) {
         if (horizontalRange.last > viewport.right) {
             arrows.draw(canvas, Arrows.Direction.Right)
         }
-
-        colony.draw(canvas, viewport, cellSize)
 
         drawInformation(canvas)
     }

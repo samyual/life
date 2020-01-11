@@ -19,7 +19,7 @@ class GameOfLife(context: Context, screenSize: Point) :
     companion object {
 
         // Количество кадров в секунду (один кадр = одно поколение)
-        private const val targetFPS: Long = 4
+        private const val targetFPS: Long = 5
 
         // Количество миллисекунд в секунде
         private const val millisPerSecond: Long = 1_000
